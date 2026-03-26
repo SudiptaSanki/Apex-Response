@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#80e0cd" />
+      <stop offset="50%" stop-color="#54d0bc" />
+      <stop offset="100%" stop-color="#2ea493" />
+    </linearGradient>
+    <linearGradient id="shieldbg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1d26" />
+      <stop offset="100%" stop-color="#061219" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <rect width="256" height="256" rx="64" fill="url(#shieldbg)" />
+  
+  <path d="M128 32C128 32 80 44 44 48V116C44 176 128 220 128 220C128 220 212 176 212 116V48C176 44 128 32 128 32Z" 
+        fill="url(#shieldGrad)" 
+        stroke="#eaf5f3" stroke-width="8" stroke-linejoin="round" />
+        
+  <path d="M128 72L156 128H100L128 72Z" fill="#061219" />
+  
+  <circle cx="128" cy="156" r="10" fill="#061219" />
+</svg>

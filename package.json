@@ -1,0 +1,34 @@
+{
+  "name": "aegisstay-crisis-coordination",
+  "private": false,
+  "version": "1.0.0",
+  "description": "Open source React and Vite starter for hospitality emergency response, crisis coordination, and hackathon demos.",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "vite",
+    "open-source",
+    "hospitality",
+    "emergency-response",
+    "crisis-coordination",
+    "hackathon",
+    "safety"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.10"
+  }
+}
