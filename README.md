@@ -1,42 +1,76 @@
 # Apex Response / AegisStay
-**Accelerated Emergency Response and Crisis Coordination in Hospitality**
+**Accelerated Emergency Response and Crisis Coordination using Web3 & AI**
 
-This repository contains the hardened, presentation-ready Frontend UI for the AegisStay hackathon project. It is ready for the backend team to hook up real-time databases and data pipelines.
+AegisStay solves a critical problem in the hospitality and infrastructure industry: **fragmented communication and verification during crises.** By blending decentralized blockchain identity (Soulbound Tokens) with AI-powered triaging (Gemini) and offline resiliency (QR nodes), AegisStay provides an unbreakable emergency network for guests and responders.
 
-## 🚀 How This Tool Helps Others
-AegisStay solves a critical problem in the hospitality industry: **fragmented communication during crises**.
-1. **Intelligent Guest Guidance**: Instead of relying on a static paper map, guests receive real-time, multilingual instructions directly on their phones. The system dynamically routes guests *away* from expanding hazards (like a spreading fire).
-2. **Unified Command View for Staff**: Hotel management gets a single, live operating picture showing precisely which rooms have acknowledged safety instructions and which areas require manual sweep teams.
-3. **Seamless First Responder Handoff**: Incoming emergency crews receive a "digital Knox Box"—a secure link that gives responders instant access to critical intel such as stairwell access paths, utility shutoffs, and live guest locations *before* they arrive.
+## 🚀 Key Features
+
+### 1. Web3 Identity & Reputation
+*   **Soulbound Tokens (SBT):** Verified responders and staff are minted a non-transferable SBT via Hardhat/MetaMask.
+*   **Decentralized Verification:** Distress calls require consensus verification from the 50 nearest node-holders before triggering an irreversible 10km grid-wide alert, eliminating spoofed emergencies.
+*   **Firebase Binding:** MetaMask wallets automatically bind to persistent Firebase Anonymous UUID profiles for seamless cross-platform identity mapping without massive onboarding friction.
+
+### 2. Gemini AI Voice Triage
+*   **Voice Fallback Engine:** Features a browser-resilient `SpeechRecognition` pipeline that triages crisis intensity using Gemini AI.
+*   **Auto-Trigger:** If Gemini categorizes speech patterns or text as a severe risk level, it automatically initiates the Web3 50-node broadcast protocol.
+*   **Simulated Resilience:** Automatically executes pre-programmed semantic pipelines if microphone access is disabled or offline, making it highly demo-able.
+
+### 3. Offline Responder Mechanics
+*   **Digital Knox Box:** Incoming emergency crews receive a secure responder link populated with Live CCTV snaps, hydrant grids, and chemical hazard ledgers.
+*   **Safe Shelter QR:** When power grids fail, local businesses can deploy the "Safe Shelter Access QR" node to legally check-in guests offline.
 
 ---
 
-## 📂 File Structure 
-To help you navigate the frontend codebase quickly, here is the architecture:
+## 📂 Architecture
+
 ```text
 src/
-├── App.jsx                # Main application, routes, layout, and top-level state
-├── main.jsx               # React DOM entry point
-├── styles.css             # Unified application styles (variables, grids, layout)
-├── nws.js                 # Integrates with the National Weather Service active alerts API
-├── phaseOneTasks.js       # Hardcoded task sequence (used in command center timeline)
-├── components/            # Extracted UI sections (e.g. Navigation, Panels)
-├── data/                  # Mocked scenario payloads (JSON objects for Fire, Storm, etc.)
-└── hooks/                 
-    └── useIncidentFeed.js # Simulated feed state (currently using localStorage for persistance)
+├── App.jsx                # Main routing framework
+├── context/
+│   └── Web3Context.jsx    # Blockchain integration & Firebase Auth pipeline
+├── components/
+│   ├── AIAdvisePage.jsx   # Gemini voice recognition & distress intelligence
+│   ├── ProfilePage.jsx    # User Reputation & SBT rendering module
+│   ├── RespondersPage.jsx # Digital Knox Box & Safe Shelter QR nodes
+│   └── GuestAppPage.jsx   # Live routing UI for active guests
+├── firebaseConfig.js      # Environment-secured Firebase credentials
 ```
 
-## 🛠️ Backend Integration Guide (Next Steps)
-The UI currently relies on mocked client-side state or public REST APIs. To "make it real", the backend team should focus on replacing these three pillars:
+## 🛠️ Installation & Execution
+This repository utilizes a full-stack infrastructure including a local Ethers.js block. 
 
-### 1. Central Incident State (Supabase / DB)
-*   **Current State:** `App.jsx` handles state via simple React `useState` hooks, and actions trigger local simulated updates.
-*   **Backend Task:** Create an `incidents` and `rooms` table in your database. Store `status`, `floor_heatmaps`, `active_routes`, and `open_tasks`. Use WebSockets (like Supabase Realtime or Socket.io) to subscribe to database changes so the frontend UI (like the Heatmap or Command Center feed) updates instantly across all connected screens.
+### Prerequisites
+*   Node.js & npm
+*   MetaMask browser extension
 
-### 2. Live Threat Data Layer (NWS / Alerts)
-*   **Current State:** `src/nws.js` calls the `api.weather.gov` REST endpoint directly from the browser.
-*   **Backend Task:** Move the NWS/Hazard API polling to a backend cron job or webhook wrapper. This avoids browser CORS policies, prevents IP rate-limiting, and allows the backend to trigger an automated "Alert Payload" to the frontend when a severe event strikes the hotel's GPS coordinates.
+### 1. Envorionment Setup
+Copy the `.env.example` file securely into a new file named `.env`:
+```bash
+cp .env.example .env
+```
+Fill in your active `VITE_GEMINI_KEY` and Firebase variables into the `.env` file. These are explicitly excluded from `.gitignore`.
 
-### 3. Guest Accountability & Actions
-*   **Current State:** Clicking the "Mark Safe" button on the guest phone preview toggles a temporary React UI hook.
-*   **Backend Task:** Create an endpoint for guest acknowledgement (`POST /api/check-in`). When a guest clicks "Mark Safe" or "Send SOS", the backend should update the specific room's status in the database. This should automatically propagate to the staff Heatmap and add a log entry into the timeline rail on the Command Center interface.
+### 2. Build Instructions
+Open **three parallel terminals** to launch the environment.
+
+**Terminal 1 (Blockchain RPC Node)**
+```bash
+cd blockchain
+npm install
+npx hardhat node
+```
+
+**Terminal 2 (Smart Contract Deployer)**
+*Wait for Terminal 1 to be fully live, then deploy:*
+```bash
+cd blockchain
+npx hardhat run scripts/deploy.js --network localhost
+```
+
+**Terminal 3 (Vite Front-end)**
+```bash
+npm install
+npm run dev
+```
+
+Connect MetaMask to `http://127.0.0.1:8545` (Chain ID: 31337) with the first Hardhat account to mint your Responder Soulbound Tokens flawlessly!

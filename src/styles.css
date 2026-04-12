@@ -1,19 +1,39 @@
 :root {
-  --bg-dark: #07131a;
-  --bg-body: #f3ede3;
-  --panel-light: rgba(255, 255, 255, 0.72);
-  --line-soft: rgba(255, 255, 255, 0.08);
-  --text-strong: #07131a;
-  --text-soft: #5a6971;
+  --bg-dark: #030a0d;
+  --bg-body: #050d11;
+  --panel-light: rgba(20, 25, 30, 0.6);
+  --line-soft: rgba(255, 255, 255, 0.1);
+  --text-strong: #ffffff;
+  --text-soft: #8ba2b0;
   --text-light: #eaf5f3;
-  --mint: #54d0bc;
-  --shadow-deep: 0 32px 90px rgba(5, 16, 22, 0.28);
-  --shadow-card: 0 24px 60px rgba(15, 31, 38, 0.12);
-  --radius-xl: 30px;
-  --radius-lg: 22px;
-  --radius-md: 16px;
+  --mint: #00ffcc;
+  --neon-red: #ff3333;
+  --neon-orange: #ff7733;
+  --shadow-deep: 0 40px 100px rgba(0, 255, 204, 0.1);
+  --shadow-card: 0 15px 35px rgba(0, 0, 0, 0.5);
+  --glow: 0 0 20px rgba(0, 255, 204, 0.4);
+  --radius-xl: 34px;
+  --radius-lg: 24px;
+  --radius-md: 18px;
   --font-display: "Space Grotesk", sans-serif;
-  --font-body: "IBM Plex Sans", sans-serif;
+  --font-body: "Inter", "IBM Plex Sans", sans-serif;
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.7); }
+  70% { box-shadow: 0 0 0 20px rgba(255, 51, 51, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 * {
@@ -41,12 +61,26 @@ button {
 }
 
 .hero-shell {
-  padding: 24px clamp(20px, 4vw, 56px) 72px;
+  padding: 40px clamp(20px, 4vw, 56px) 100px;
   color: var(--text-light);
   background:
-    radial-gradient(circle at top left, rgba(84, 208, 188, 0.18), transparent 90%),
-    radial-gradient(circle at top right, rgba(241, 138, 81, 0.16), transparent 90%),
-    linear-gradient(180deg, #061219 0%, #0a1d26 100%);
+    radial-gradient(circle at 10% 20%, rgba(0, 255, 204, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(255, 119, 51, 0.15) 0%, transparent 40%),
+    linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-body) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-shell::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 .topbar {
@@ -54,13 +88,16 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  width: min(1220px, 100%);
-  margin: 0 auto 44px;
-  padding: 14px 18px;
-  border: 1px solid var(--line-soft);
+  width: min(1300px, 100%);
+  margin: 0 auto 50px;
+  padding: 16px 24px;
+  border: 1px solid rgba(0, 255, 204, 0.2);
   border-radius: 999px;
-  background: rgba(8, 20, 27, 0.48);
-  backdrop-filter: blur(18px);
+  background: rgba(10, 20, 25, 0.6);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  position: relative;
+  z-index: 100;
 }
 
 .brand {
@@ -240,14 +277,40 @@ button {
 .phase-card,
 .launch-card,
 .closing-card {
-  border: 1px solid var(--line-soft);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-lg);
+  background: rgba(20, 25, 30, 0.4);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.metric-card:hover, .panel:hover, .signal-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(0, 255, 204, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 255, 204, 0.1);
 }
 
 .metric-card {
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  transform: skewX(-20deg);
+  animation: shine 4s infinite;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
 }
 
 .metric-card span,

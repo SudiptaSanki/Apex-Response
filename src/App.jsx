@@ -3,6 +3,16 @@ import CommandCenterDashboard from "./components/command/CommandCenterDashboard"
 import ScenarioSelector from "./components/shared/ScenarioSelector";
 import { demoProperty, fetchActiveAlertsByPoint } from "./nws";
 import { phaseOneTasks } from "./phaseOneTasks";
+import { useWeb3 } from "./context/Web3Context";
+import MediaCapture from "./components/MediaCapture";
+import GuestAppPageFull from "./components/GuestAppPage";
+import CommandCenterPageFull from "./components/CommandCenterPage";
+import RespondersPageFull from "./components/RespondersPage";
+import PlatformPageFull from "./components/PlatformPage";
+import AppShell from "./components/AppShell";
+import HomePageNew from "./components/HomePage";
+import AIAdvisePage from "./components/AIAdvisePage";
+import ProfilePage from "./components/ProfilePage";
 
 const scenarios = [
   {
@@ -305,6 +315,8 @@ const siteRoutes = [
   { path: "/guest-app", label: "Guest app", navLabel: "Guest app" },
   { path: "/command-center", label: "Command center", navLabel: "Command center" },
   { path: "/responders", label: "Responders", navLabel: "Responders" },
+  { path: "/ai-advisor", label: "AI Advisor", navLabel: "AI Advisor" },
+  { path: "/profile", label: "My Profile", navLabel: "Profile" },
 ];
 
 const pageCards = [
@@ -464,6 +476,28 @@ function taskStatusTone(status) {
 
 function Topbar({ route, navigate }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { account, connectApp, reputation, badges, firebaseUser, dispatchOnChainSOS } = useWeb3();
+  const [showSOS, setShowSOS] = useState(false);
+  const [liveLogs, setLiveLogs] = useState([]);
+
+  const handleVerify = async (res) => {
+    setShowSOS(false);
+    setLiveLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: `AI Triaging Incident: ${res.desc}...` }]);
+
+    const success = await dispatchOnChainSOS(50, "ipfs://HeroBadge");
+
+    if (success) {
+      setLiveLogs(prev => [
+        ...prev,
+        { time: new Date().toLocaleTimeString(), msg: `âœ… MINTED: 50 FCR & Hero SBT awarded to Wallet ${account.substring(0, 6)}` },
+        { time: new Date().toLocaleTimeString(), msg: `ðŸš€ Expanding 10km radius. Relaying smart-contract to dummy responders.` },
+        { time: new Date().toLocaleTimeString(), msg: `ðŸ“ AR Floor Arrows routing east wing guests to Stairwell B.` },
+        { time: new Date().toLocaleTimeString(), msg: `ðŸ”’ Lockdown Mode automated. Occupancy matrix locked.` }
+      ]);
+    } else {
+      setLiveLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg: `âŒ Chain Error: Transaction Aborted.` }]);
+    }
+  };
 
   return (
     <nav className="topbar">
@@ -476,11 +510,31 @@ function Topbar({ route, navigate }) {
         <span className="brand-mark">A</span>
         <span className="brand-copy">
           <strong>AegisStay</strong>
-          <span>Hospitality crisis coordination</span>
+          <span>Web3 Crisis Protocol</span>
         </span>
       </button>
 
-      <button 
+      <div style={{ marginLeft: 'auto', display: 'flex', gap: '1rem', alignItems: 'center', paddingRight: '1rem' }}>
+        <button onClick={() => setShowSOS(true)} style={{ background: 'var(--neon-red)', color: 'white', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem', animation: 'pulse-red 2s infinite', textShadow: '0 0 8px rgba(255,255,255,0.5)' }}>ðŸš¨ GLOBAL SOS</button>
+        <button onClick={connectApp} style={{ cursor: 'pointer', border: '1px solid var(--mint)', padding: '0.6rem 1.2rem', borderRadius: '12px', background: 'rgba(0, 255, 204, 0.1)', color: 'var(--mint)', fontSize: '0.9rem', fontWeight: '600', transition: 'all 0.3s' }}>
+          {account ? `${account.substring(0, 6)}... (${reputation} FCR)` : 'ðŸ¦Š Connect Aegis Node'}
+        </button>
+      </div>
+
+      {showSOS && <MediaCapture onClose={() => setShowSOS(false)} onVerify={handleVerify} />}
+
+      {/* Modern Live Event Log HUD overlay */}
+      {liveLogs.length > 0 && (
+        <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', width: '380px', display: 'flex', flexDirection: 'column', gap: '12px', zIndex: 10000 }}>
+          {liveLogs.map((log, i) => (
+            <div key={i} style={{ padding: '1rem', background: 'rgba(10, 15, 25, 0.85)', backdropFilter: 'blur(12px)', borderLeft: '4px solid var(--mint)', borderRadius: '8px', color: 'white', fontSize: '0.9rem', animation: 'slide-in 0.3s ease-out forwards', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+              <strong style={{ color: 'var(--mint)' }}>[{log.time}]</strong> {log.msg}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
         className="mobile-menu-toggle"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         aria-label="Toggle navigation menu"
@@ -489,9 +543,9 @@ function Topbar({ route, navigate }) {
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           {isMobileMenuOpen ? (
-            <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
           ) : (
-            <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeLinejoin="round" />
           )}
         </svg>
       </button>
@@ -716,7 +770,7 @@ function IncidentTimeline({ activeScenario }) {
   );
 }
 
-function useButtonFeedback(initialText, feedbackText = "✓ Sent", duration = 2000) {
+function useButtonFeedback(initialText, feedbackText = "âœ“ Sent", duration = 2000) {
   const [text, setText] = useState(initialText);
   const [isSending, setIsSending] = useState(false);
 
@@ -739,8 +793,8 @@ function useButtonFeedback(initialText, feedbackText = "✓ Sent", duration = 20
 
 function GuestPhonePreview({ activeScenario }) {
   const guestView = activeScenario.surfaces.guest;
-  const [primaryText, triggerPrimary, isPrimarySending] = useButtonFeedback(guestView.primary, "✓ Routing Started");
-  const [secondaryText, triggerSecondary, isSecondarySending] = useButtonFeedback(guestView.secondary, "✓ Safe Status Sent");
+  const [primaryText, triggerPrimary, isPrimarySending] = useButtonFeedback(guestView.primary, "âœ“ Routing Started");
+  const [secondaryText, triggerSecondary, isSecondarySending] = useButtonFeedback(guestView.secondary, "âœ“ Safe Status Sent");
 
   return (
     <article className="device-preview">
@@ -764,18 +818,18 @@ function GuestPhonePreview({ activeScenario }) {
             ))}
           </div>
           <div className="device-actions">
-            <button 
+            <button
               className={`device-action device-action-primary ${isPrimarySending ? "is-active-feedback" : ""}`}
               disabled={isPrimarySending}
-              onClick={triggerPrimary} 
+              onClick={triggerPrimary}
               type="button"
             >
               {primaryText}
             </button>
-            <button 
+            <button
               className={`device-action ${isSecondarySending ? "is-active-feedback" : ""}`}
               disabled={isSecondarySending}
-              onClick={triggerSecondary} 
+              onClick={triggerSecondary}
               type="button"
             >
               {secondaryText}
@@ -817,8 +871,8 @@ function ResponderBriefBoard({ activeScenario }) {
 
 function SurfacePanel({ activeScenario, activeSurface, setActiveSurface }) {
   const activeSurfacePanel = activeScenario.surfaces[activeSurface];
-  const [primaryText, triggerPrimary, isPrimarySending] = useButtonFeedback(activeSurfacePanel.primary, "✓ Sent");
-  const [secondaryText, triggerSecondary, isSecondarySending] = useButtonFeedback(activeSurfacePanel.secondary, "✓ Updated");
+  const [primaryText, triggerPrimary, isPrimarySending] = useButtonFeedback(activeSurfacePanel.primary, "âœ“ Sent");
+  const [secondaryText, triggerSecondary, isSecondarySending] = useButtonFeedback(activeSurfacePanel.secondary, "âœ“ Updated");
 
   return (
     <article className="surface-card">
@@ -841,19 +895,19 @@ function SurfacePanel({ activeScenario, activeSurface, setActiveSurface }) {
         <p>{activeSurfacePanel.blurb}</p>
 
         <div className="action-row">
-          <button 
-             className={`button-primary ${isPrimarySending ? "is-active-feedback" : ""}`}
-             disabled={isPrimarySending}
-             onClick={triggerPrimary}
-             type="button"
+          <button
+            className={`button-primary ${isPrimarySending ? "is-active-feedback" : ""}`}
+            disabled={isPrimarySending}
+            onClick={triggerPrimary}
+            type="button"
           >
             {primaryText}
           </button>
-          <button 
-             className={`button-secondary ${isSecondarySending ? "is-active-feedback" : ""}`}
-             disabled={isSecondarySending}
-             onClick={triggerSecondary}
-             type="button"
+          <button
+            className={`button-secondary ${isSecondarySending ? "is-active-feedback" : ""}`}
+            disabled={isSecondarySending}
+            onClick={triggerSecondary}
+            type="button"
           >
             {secondaryText}
           </button>
@@ -1376,459 +1430,66 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // â”€â”€ All routes now use AppShell as the consistent navigation wrapper â”€â”€
   if (route === "/platform") {
     return (
-      <PlatformPage
-        activeScenario={activeScenario}
-        completedTasks={completedTasks}
-        inProgressTasks={inProgressTasks}
-        liveAlerts={liveAlerts}
-        navigate={navigate}
-        nwsState={nwsState}
-        refreshAlerts={refreshAlerts}
-        route={route}
-      />
+      <AppShell route={route} navigate={navigate}>
+        <PlatformPageFull navigate={navigate} />
+      </AppShell>
     );
   }
 
   if (route === "/guest-app") {
     return (
-      <GuestAppPage
-        activeScenario={activeScenario}
-        activeScenarioId={activeScenarioId}
-        navigate={navigate}
-        nwsState={nwsState}
-        route={route}
-        setActiveScenarioId={setActiveScenarioId}
-      />
+      <AppShell route={route} navigate={navigate}>
+        <GuestAppPageFull navigate={navigate} />
+      </AppShell>
     );
   }
 
   if (route === "/command-center") {
     return (
-      <CommandCenterPage
-        activeScenario={activeScenario}
-        activeScenarioId={activeScenarioId}
-        liveAlerts={liveAlerts}
-        navigate={navigate}
-        nwsState={nwsState}
-        route={route}
-        setActiveScenarioId={setActiveScenarioId}
-      />
+      <AppShell route={route} navigate={navigate}>
+        <CommandCenterPageFull navigate={navigate} />
+      </AppShell>
     );
   }
 
   if (route === "/responders") {
     return (
-      <RespondersPage
-        activeScenario={activeScenario}
-        activeSurface={activeSurface}
-        navigate={navigate}
-        nwsState={nwsState}
-        route={route}
-        setActiveSurface={setActiveSurface}
-      />
+      <AppShell route={route} navigate={navigate}>
+        <RespondersPageFull navigate={navigate} />
+      </AppShell>
     );
   }
 
+  // AI Advisor page
+  if (route === "/ai-advisor") {
+    return (
+      <AppShell route={route} navigate={navigate}>
+        <AIAdvisePage navigate={navigate} />
+      </AppShell>
+    );
+  }
+
+  // Profile page
+  if (route === "/profile") {
+    return (
+      <AppShell route={route} navigate={navigate}>
+        <ProfilePage navigate={navigate} />
+      </AppShell>
+    );
+  }
+
+  // Home page
   return (
-    <div className="site-shell">
-      <header className="hero-shell">
-        <Topbar navigate={navigate} route={route} />
-
-        <section className="hero" id="top">
-          <div className="hero-copy">
-            <p className="eyebrow">Accelerated Emergency Response in Hospitality</p>
-            <h1>Hotels do not need another alarm. They need a live coordination layer.</h1>
-            <p className="hero-text">
-              AegisStay is a React-powered product concept that turns public hazard signals,
-              indoor routing, and guest accountability into one modern operating system for
-              hotels under pressure.
-            </p>
-
-            <div className="cta-row">
-              <button className="button-primary" onClick={() => navigate("/command-center")} type="button">
-                Open the command center
-              </button>
-              <button className="button-secondary" onClick={() => navigate("/platform")} type="button">
-                View platform pages
-              </button>
-            </div>
-
-            <div className="hero-metrics">
-              <div className="metric-card">
-                <span>Incident created</span>
-                <strong>{activeScenario.responseTime}</strong>
-                <small>from alert to action</small>
-              </div>
-              <div className="metric-card">
-                <span>Guest reach</span>
-                <strong>5 languages</strong>
-                <small>calm multilingual delivery</small>
-              </div>
-              <div className="metric-card">
-                <span>Responder handoff</span>
-                <strong>1 secure link</strong>
-                <small>floor plans, hazards, live status</small>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-visual">
-            <div className="dashboard-frame">
-              <div className="frame-topline">
-                <span className="live-pill">Live incident</span>
-                <span>{activeScenario.location}</span>
-              </div>
-
-              <div className="dashboard-banner">
-                <div>
-                  <p>{activeScenario.kicker}</p>
-                  <h2>{activeScenario.label}</h2>
-                </div>
-                <div className="alert-badge">{activeScenario.mode}</div>
-              </div>
-
-              <div className="dashboard-grid">
-                <div className="panel panel-wide">
-                  <div className="panel-heading">
-                    <span>Occupancy heatmap</span>
-                    <strong>Room-level visibility</strong>
-                  </div>
-
-                  <div className="heatmap-board">
-                    {activeScenario.heatmap.map((row) => (
-                      <div className="heatmap-row" key={row.floor}>
-                        <span className="floor-label">{row.floor}</span>
-                        <div className="heatmap-cells">
-                          {row.rooms.map((room, index) => (
-                            <span
-                              className="heatmap-cell"
-                              key={`${row.floor}-${index}`}
-                              style={heatCellStyle(room, activeScenario.accent)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="panel">
-                  <div className="panel-heading">
-                    <span>Trigger</span>
-                    <strong>{activeScenario.alert}</strong>
-                  </div>
-                  <p className="panel-copy">
-                    The platform normalizes the signal, opens an incident, and launches the
-                    recommended workflow automatically.
-                  </p>
-                </div>
-
-                <div className="panel">
-                  <div className="panel-heading">
-                    <span>Responder brief</span>
-                    <strong>Expiring secure access</strong>
-                  </div>
-                  <ul className="micro-list">
-                    <li>3D floor pack</li>
-                    <li>Hazard and shutoff locations</li>
-                    <li>Live safe and SOS statuses</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </header>
-
-      <main>
-        <OperationsStrip
-          activeScenario={activeScenario}
-          contextLabel="Product overview"
-          nwsState={nwsState}
-        />
-
-        <section className="section page-directory-section">
-          <div className="section-intro">
-            <p className="eyebrow eyebrow-dark">Explore the product</p>
-            <h2>The single-page concept is now a navigable product site.</h2>
-            <p>
-              Move through dedicated pages for the platform, guest app, command center,
-              and responder handoff without leaving the same React app.
-            </p>
-          </div>
-
-          <div className="page-card-grid">
-            {pageCards.map((card) => (
-              <button
-                className="page-card"
-                key={card.path}
-                onClick={() => navigate(card.path)}
-                type="button"
-              >
-                <span className="capsule capsule-soft">{card.path === "/" ? "Home" : "Page"}</span>
-                <h3>{card.title}</h3>
-                <p>{card.body}</p>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="section story-section">
-          <div className="story-grid">
-            <div className="story-column">
-              <div className="section-intro">
-                <p className="eyebrow eyebrow-dark">Operational story</p>
-                <h2>Show judges the timeline, not just the promise.</h2>
-                <p>
-                  A modern emergency platform should make the first minute feel legible. This
-                  section turns the concept into a lived sequence of actions across guests,
-                  staff, and responders.
-                </p>
-              </div>
-              <IncidentTimeline activeScenario={activeScenario} />
-            </div>
-
-            <div className="story-column">
-              <div className="section-intro">
-                <p className="eyebrow eyebrow-dark">Mode logic</p>
-                <h2>Three operational personalities, one interface language.</h2>
-              </div>
-              <div className="mode-card-stack">
-                {commandModes.map((item) => (
-                  <article className="mode-card" key={item.title}>
-                    <span className="signal-label">{item.label}</span>
-                    <h3>{item.title}</h3>
-                    <p>{item.body}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="section signal-section" id="signals">
-          <div className="section-intro">
-            <p className="eyebrow eyebrow-dark">Grounded in real signals</p>
-            <h2>The story is ambitious. The data stack is real-world.</h2>
-            <p>
-              This site is framed like a product launch, but its signal model maps to live
-              public APIs, historical resilience datasets, and indoor routing engines that can
-              support a credible hackathon demo.
-            </p>
-          </div>
-
-          <div className="signal-grid">
-            {signalPillars.map((pillar) => (
-              <article className="signal-card" key={pillar.title}>
-                <span className="signal-label">{pillar.label}</span>
-                <h3>{pillar.title}</h3>
-                <p>{pillar.text}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="section live-data-section" id="live-data">
-          <div className="section-intro">
-            <p className="eyebrow eyebrow-dark">Phase 1 now underway</p>
-            <h2>One real data source is wired in: live NWS alerts for a demo hotel point.</h2>
-            <p>
-              The app now reaches out to the National Weather Service active-alert endpoint
-              for a U.S. pilot property. That gives the prototype a real hazard intake layer
-              while the rest of the platform remains simulator-first.
-            </p>
-          </div>
-
-          <div className="live-data-grid">
-            <LiveDataPanel
-              demoPropertyInfo={demoProperty}
-              liveAlerts={liveAlerts}
-              nwsState={nwsState}
-              refreshAlerts={refreshAlerts}
-            />
-
-            <TaskBoard completedTasks={completedTasks} inProgressTasks={inProgressTasks} />
-          </div>
-        </section>
-
-        <section className="section simulator-section" id="simulator">
-          <div className="section-intro">
-            <p className="eyebrow eyebrow-dark">Interactive product simulator</p>
-            <h2>Switch the emergency scenario and see the platform adapt.</h2>
-            <p>
-              The demo is designed to show a judge or stakeholder what changes for guests,
-              staff, and responders when the incident type changes, without rebuilding the
-              product each time.
-            </p>
-          </div>
-
-          <div className="scenario-toggle" role="tablist" aria-label="Emergency scenarios">
-            {scenarios.map((scenario) => (
-              <button
-                key={scenario.id}
-                className={scenario.id === activeScenarioId ? "toggle-pill active" : "toggle-pill"}
-                onClick={() => setActiveScenarioId(scenario.id)}
-                type="button"
-              >
-                <span>{scenario.label}</span>
-                <small>{scenario.mode}</small>
-              </button>
-            ))}
-          </div>
-
-          <div className="simulator-grid">
-            <article className="ops-card">
-              <div className="ops-header">
-                <div>
-                  <span className="capsule">Incident mode</span>
-                  <h3>{activeScenario.title}</h3>
-                </div>
-                <div className="mode-token">{activeScenario.mode}</div>
-              </div>
-
-              <p className="ops-summary">{activeScenario.summary}</p>
-
-              <div className="stats-grid">
-                {activeScenario.metrics.map((metric) => (
-                  <div className="stat-box" key={metric.label}>
-                    <span>{metric.label}</span>
-                    <strong>{metric.value}</strong>
-                  </div>
-                ))}
-              </div>
-
-              <div className="route-panel">
-                <div className="panel-heading">
-                  <span>Priority actions</span>
-                  <strong>Dynamic playbook</strong>
-                </div>
-                <div className="route-list">
-                  {activeScenario.route.map((item) => (
-                    <div className="route-item" key={item.step}>
-                      <span className={`status-dot ${statusTone(item.status)}`} />
-                      <p>{item.step}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </article>
-
-            <SurfacePanel
-              activeScenario={activeScenario}
-              activeSurface={activeSurface}
-              setActiveSurface={setActiveSurface}
-            />
-          </div>
-        </section>
-
-        <section className="section capabilities-section">
-          <div className="section-intro">
-            <p className="eyebrow eyebrow-dark">Why it feels real</p>
-            <h2>Modern product design paired with operational credibility.</h2>
-          </div>
-
-          <div className="capability-grid">
-            {capabilities.map((capability) => (
-              <article className="capability-card" key={capability.title}>
-                <h3>{capability.title}</h3>
-                <p>{capability.body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="section adapt-section" id="adapt">
-          <div className="section-intro">
-            <p className="eyebrow eyebrow-dark">Deployment flexibility</p>
-            <h2>Adapt the platform for different properties and operating models.</h2>
-            <p>
-              The concept is structured so teams can localize scenarios, tune workflows, and
-              expand the data layer without rebuilding the core incident experience from scratch.
-            </p>
-          </div>
-
-          <div className="adapt-grid">
-            {adaptationCards.map((card) => (
-              <article className="adapt-card" key={card.title}>
-                <h3>{card.title}</h3>
-                <p>{card.body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="section architecture-section" id="architecture">
-          <div className="section-intro">
-            <p className="eyebrow eyebrow-dark">System design</p>
-            <h2>Built as one incident pipeline, not a loose collection of screens.</h2>
-            <p>
-              The strongest implementation path is a React front end on top of a real-time
-              incident model, with alert ingestion, routing data, and simulator inputs feeding
-              the same command layer.
-            </p>
-          </div>
-
-          <div className="architecture-track">
-            {implementationPhases.map((phase) => (
-              <article className="phase-card" key={phase.name}>
-                <span className="phase-index">{phase.name}</span>
-                <p>{phase.detail}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="section roadmap-section" id="launch">
-          <div className="launch-grid">
-            <article className="launch-card">
-              <p className="eyebrow eyebrow-dark">Launch-ready MVP</p>
-              <h2>What to build first over a hackathon weekend</h2>
-              <ol className="launch-list">
-                <li>Stand up a React front end with staff, guest, and responder views.</li>
-                <li>Use one property and one indoor floor-plan model for the core demo.</li>
-                <li>Ingest live alerts and push them into a shared incident timeline.</li>
-                <li>Simulate occupancy, SOS, and assembly check-in updates in real time.</li>
-              </ol>
-            </article>
-
-            <article className="launch-card launch-card-contrast">
-              <p className="eyebrow">Future roadmap</p>
-              <h2>High-impact features to pitch next</h2>
-              <div className="roadmap-cloud">
-                {roadmap.map((item) => (
-                  <span key={item}>{item}</span>
-                ))}
-              </div>
-            </article>
-          </div>
-        </section>
-
-        <section className="section closing-section" id="contact">
-          <div className="closing-card">
-            <p className="eyebrow">From alert to accountability</p>
-            <h2>Designed to help a hotel respond with the calm of a control room.</h2>
-            <p>
-              The site is ready to evolve into a real product MVP with Supabase, live alert
-              ingestion, indoor routing data, and production-grade messaging flows.
-            </p>
-            <div className="cta-row">
-              <button className="button-primary" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} type="button">
-                Back to top
-              </button>
-              <button className="button-secondary" onClick={() => navigate("/platform")} type="button">
-                Review platform architecture
-              </button>
-            </div>
-          </div>
-          <div className="page-footer-links" style={{ justifyContent: "center", marginTop: "40px" }}>
-            <span style={{ color: "var(--text-soft)", fontSize: "0.85rem" }}>
-              Simulation Environment MVP • © {new Date().getFullYear()} AegisStay
-            </span>
-          </div>
-        </section>
-      </main>
-    </div>
+    <AppShell route={route} navigate={navigate}>
+      <HomePageNew
+        navigate={navigate}
+        activeScenario={activeScenario}
+        liveAlerts={liveAlerts}
+        nwsState={nwsState}
+      />
+    </AppShell>
   );
 }
