@@ -61,7 +61,7 @@ export default function GuestAppPage({ navigate }) {
                                 </button>
                                 {languages.map(l => (
                                     <button key={l.code} onClick={() => setLang(l.code)} title={l.label}
-                                        style={{ padding: "4px 8px", borderRadius: 8, border: lang === l.code ? "2px solid var(--mint)" : "1px solid rgba(255,255,255,0.15)", background: lang === l.code ? "rgba(0,255,204,0.15)" : "transparent", cursor: "pointer", fontSize: "1.1rem" }}>
+                                        style={{ color: "white", padding: "4px 8px", borderRadius: 8, border: lang === l.code ? "2px solid var(--mint)" : "1px solid rgba(255,255,255,0.15)", background: lang === l.code ? "rgba(0,255,204,0.15)" : "transparent", cursor: "pointer", fontSize: "1.1rem" }}>
                                         {l.flag}
                                     </button>
                                 ))}
