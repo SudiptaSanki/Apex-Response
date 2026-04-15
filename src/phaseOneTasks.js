@@ -16,7 +16,7 @@ export const phaseOneTasks = [
   },
   {
     title: "OpenFEMA resilience context",
-    status: "next",
+    status: "done",
     summary:
       "Add disaster declarations and mitigation history for the pilot region so staff can see preparedness context, not only current hazards.",
     nextAction:
